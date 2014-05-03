@@ -409,20 +409,20 @@ static bool ca_bitmap_from_ch_desc(struct ao *ao, AudioChannelLayout *layout,
     return all_channels_valid;
 }
 
-static void ca_log_layout(struct ao *ao, AudioChannelLayout layout)
+static void ca_log_layout(struct ao *ao, AudioChannelLayout *layout)
 {
     if (!mp_msg_test(ao->log, MSGL_V))
         return;
 
-    AudioChannelDescription *descs = layout.mChannelDescriptions;
+    AudioChannelDescription *descs = layout->mChannelDescriptions;
 
     MP_VERBOSE(ao, "layout: tag: <%d>, bitmap: <%d>, "
                    "descriptions <%d>\n",
-                   layout.mChannelLayoutTag,
-                   layout.mChannelBitmap,
-                   layout.mNumberChannelDescriptions);
+                   layout->mChannelLayoutTag,
+                   layout->mChannelBitmap,
+                   layout->mNumberChannelDescriptions);
 
-    for (int i = 0; i < layout.mNumberChannelDescriptions; i++) {
+    for (int i = 0; i < layout->mNumberChannelDescriptions; i++) {
         AudioChannelDescription d = descs[i];
         MP_VERBOSE(ao, " - description %d: label <%d, %d>, flags: <%u>, "
                        "coords: <%f, %f, %f>\n", i,
@@ -444,22 +444,22 @@ void ca_bitmaps_from_layouts(struct ao *ao,
 
     for (int i=0; i < n_layouts; i++) {
         uint32_t bitmap = 0;
-        AudioChannelLayout layout = layouts[i];
-        AudioChannelLayoutTag tag = layouts[i].mChannelLayoutTag;
-        uint32_t layout_size      = sizeof(layout);
+        AudioChannelLayout *layout = &layouts[i];
+        AudioChannelLayoutTag tag  = layout->mChannelLayoutTag;
+        uint32_t layout_size       = sizeof(layout);
 
         if (tag == kAudioChannelLayoutTag_UseChannelBitmap) {
             AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForBitmap,
                                    sizeof(uint32_t),
-                                   &layout.mChannelBitmap,
+                                   &layout->mChannelBitmap,
                                    &layout_size,
-                                   &layout);
+                                   layout);
         } else if (tag != kAudioChannelLayoutTag_UseChannelDescriptions) {
             AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForTag,
                                    sizeof(AudioChannelLayoutTag),
-                                   &layout.mChannelLayoutTag,
+                                   &layout->mChannelLayoutTag,
                                    &layout_size,
-                                   &layout);
+                                   layout);
         }
 
         ca_log_layout(ao, layout);
