@@ -377,6 +377,14 @@ static int ca_label_to_mp_speaker_id(AudioChannelLabel label)
     return -1;
 }
 
+static int ca_label_from_mp_speaker_id(enum mp_speaker_id speaker)
+{
+    for (int i = 0; speaker_map[i][0] != kAudioChannelLabel_Unknown; i++)
+        if (speaker_map[i][1] == speaker)
+            return speaker_map[i][0];
+    return kAudioChannelLabel_Unknown;
+}
+
 static bool ca_bitmap_from_ch_desc(struct ao *ao, AudioChannelLayout *layout,
                                    uint32_t *bitmap)
 {
@@ -467,4 +475,20 @@ void ca_bitmaps_from_layouts(struct ao *ao,
         if (ca_bitmap_from_ch_desc(ao, &layouts[i], &bitmap))
             (*bitmaps)[(*n_bitmaps)++] = bitmap;
     }
+}
+
+void ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
+                             AudioChannelLayout *layout)
+{
+    memset(layout, 0, sizeof(AudioChannelLayout));
+    layout->mChannelLayoutTag = kAudioChannelLayoutTag_UseChannelDescriptions;
+    layout->mNumberChannelDescriptions = chmap.num;
+
+    for (int n = 0; n < chmap.num; n++) {
+        uint8_t speaker = chmap.speaker[n];
+        AudioChannelLabel label = ca_label_from_mp_speaker_id(speaker);
+        layout->mChannelDescriptions[n].mChannelLabel = label;
+    }
+
+    ca_log_layout(ao, layout);
 }

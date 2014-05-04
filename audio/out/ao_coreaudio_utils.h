@@ -81,4 +81,7 @@ void ca_bitmaps_from_layouts(struct ao *ao,
                              AudioChannelLayout *layouts, size_t n_layouts,
                              uint32_t **bitmaps, size_t *n_bitmaps);
 
+void ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
+                             AudioChannelLayout *layout);
+
 #endif /* MPV_COREAUDIO_UTILS_H */
