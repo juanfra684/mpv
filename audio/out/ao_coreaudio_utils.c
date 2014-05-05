@@ -466,14 +466,17 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
 void ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
                              AudioChannelLayout *layout)
 {
-    memset(layout, 0, sizeof(AudioChannelLayout));
-    layout->mChannelLayoutTag = kAudioChannelLayoutTag_UseChannelDescriptions;
-    layout->mNumberChannelDescriptions = chmap.num;
+    *layout = (AudioChannelLayout) {
+        .mChannelLayoutTag = kAudioChannelLayoutTag_UseChannelDescriptions,
+        .mNumberChannelDescriptions = chmap.num
+    };
 
     for (int n = 0; n < chmap.num; n++) {
         uint8_t speaker = chmap.speaker[n];
         AudioChannelLabel label = ca_label_from_mp_speaker_id(speaker);
-        layout->mChannelDescriptions[n].mChannelLabel = label;
+        layout->mChannelDescriptions[n] = (AudioChannelDescription) {
+            .mChannelLabel = label,
+        };
     }
 
     ca_log_layout(ao, layout);
