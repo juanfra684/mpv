@@ -463,9 +463,10 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
     return all_channels_valid;
 }
 
-void ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
+bool ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
                              AudioChannelLayout *layout)
 {
+    OSStatus err;
     *layout = (AudioChannelLayout) {
         .mChannelLayoutTag = kAudioChannelLayoutTag_UseChannelDescriptions,
         .mNumberChannelDescriptions = chmap.num
@@ -479,5 +480,19 @@ void ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
         };
     }
 
+    AudioChannelLayoutTag tag;
+    uint32_t tag_size = sizeof(tag);
+
+    err = AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForBitmap,
+                                 sizeof(*layout), layout,
+                                 &tag_size, &tag);
+
+    CHECK_CA_ERROR("can't convert channel description to channel layout tag");
+    layout = &(AudioChannelLayout) { .mChannelLayoutTag = tag };
+
     ca_log_layout(ao, layout);
+
+    return true;
+coreaudio_error:
+    return false;
 }
