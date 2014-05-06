@@ -487,9 +487,12 @@ bool ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
                                  sizeof(*layout), layout,
                                  &tag_size, &tag);
 
-    CHECK_CA_ERROR("can't convert channel description to channel layout tag");
-    layout = &(AudioChannelLayout) { .mChannelLayoutTag = tag };
+    if (!check_ca_st(
+            ao, MSGL_V, err,
+            "can't convert channel description to channel layout tag"))
+        goto coreaudio_error;
 
+    layout = &(AudioChannelLayout) { .mChannelLayoutTag = tag };
     ca_log_layout(ao, layout);
 
     return true;
