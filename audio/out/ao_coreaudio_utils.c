@@ -416,19 +416,22 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
 {
     AudioChannelLayoutTag tag  = layout->mChannelLayoutTag;
     uint32_t layout_size       = sizeof(layout);
+    OSStatus err;
 
     if (tag == kAudioChannelLayoutTag_UseChannelBitmap) {
-        AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForBitmap,
-                               sizeof(uint32_t),
-                               &layout->mChannelBitmap,
-                               &layout_size,
-                               layout);
+        err = AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForBitmap,
+                                     sizeof(uint32_t),
+                                     &layout->mChannelBitmap,
+                                     &layout_size,
+                                     layout);
+        CHECK_CA_ERROR("failed to convert channel bitmap to descriptions");
     } else if (tag != kAudioChannelLayoutTag_UseChannelDescriptions) {
-        AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForTag,
-                               sizeof(AudioChannelLayoutTag),
-                               &layout->mChannelLayoutTag,
-                               &layout_size,
-                               layout);
+        err = AudioFormatGetProperty(kAudioFormatProperty_ChannelLayoutForTag,
+                                     sizeof(AudioChannelLayoutTag),
+                                     &layout->mChannelLayoutTag,
+                                     &layout_size,
+                                     layout);
+        CHECK_CA_ERROR("failed to convert channel tag to descriptions");
     }
 
     ca_log_layout(ao, layout);
@@ -460,6 +463,9 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
     }
 
     return chmap->num > 0;
+coreaudio_error:
+    ca_log_layout(ao, layout);
+    return false;
 }
 
 bool ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
