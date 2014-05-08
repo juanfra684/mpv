@@ -445,10 +445,7 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
     //   to the waveextensible definition: this is the kind of
     //   descriptions we process here.
 
-    chmap->num = layout->mNumberChannelDescriptions;
-
-    bool all_channels_valid = true;
-    for (int n = 0; n < chmap->num && all_channels_valid; n++) {
+    for (int n = 0; n < layout->mNumberChannelDescriptions; n++) {
         AudioChannelLabel label = layout->mChannelDescriptions[n].mChannelLabel;
         uint8_t speaker = ca_label_to_mp_speaker_id(label);
         if (label == kAudioChannelLabel_Unknown)
@@ -456,13 +453,13 @@ bool ca_layout_to_mp_chmap(struct ao *ao, AudioChannelLayout *layout,
         if (speaker < 0) {
             MP_VERBOSE(ao, "channel label=%d unusable to build channel "
                            "bitmap, skipping layout\n", label);
-            all_channels_valid = false;
         } else {
             chmap->speaker[n] = speaker;
+            chmap->num = n + 1;
         }
     }
 
-    return all_channels_valid;
+    return chmap->num > 0;
 }
 
 bool ca_layout_from_mp_chmap(struct ao *ao, struct mp_chmap chmap,
