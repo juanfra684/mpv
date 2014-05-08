@@ -371,7 +371,7 @@ static const int speaker_map[][2] = {
 
 static int ca_label_to_mp_speaker_id(AudioChannelLabel label)
 {
-    for (int i = 0; speaker_map[i][0] != kAudioChannelLabel_Unknown; i++)
+    for (int i = 0; speaker_map[i][1] >= 0; i++)
         if (speaker_map[i][0] == label)
             return speaker_map[i][1];
     return -1;
@@ -379,7 +379,7 @@ static int ca_label_to_mp_speaker_id(AudioChannelLabel label)
 
 static int ca_label_from_mp_speaker_id(enum mp_speaker_id speaker)
 {
-    for (int i = 0; speaker_map[i][0] != kAudioChannelLabel_Unknown; i++)
+    for (int i = 0; speaker_map[i][1] >= 0; i++)
         if (speaker_map[i][1] == speaker)
             return speaker_map[i][0];
     return kAudioChannelLabel_Unknown;
